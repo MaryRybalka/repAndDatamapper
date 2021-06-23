@@ -43,7 +43,7 @@ class Cat
     }
 }
 
-Class Datamapper{
+Class CatDataMapper{
     protected $pdo;
 
     public function __construct(PDO $db) {
@@ -52,14 +52,30 @@ Class Datamapper{
 
     public function save(Cat $cat) : bool
     {
-        $stmt = $this->pdo->prepare("INSERT INTO cat (id, name, color, number_of_lines, sex) 
-                               VALUES(:cat_id, :name, :color, :number_of_lines, :sex)");
-        $stmt->bindParam(":cat_id",          $this->cat_id);
-        $stmt->bindParam(":name",            $this->name);
-        $stmt->bindParam(":color",           $this->color);
-        $stmt->bindParam(":number_of_lines", $this->number_of_lines);
-        $stmt->bindParam(":sex",             $this->sex);
-        return $stmt->execute();
+        $sameCat="";
+        $res = false;
+        foreach($this->pdo->query("SELECT * FROM cat WHERE id = :cat_id", PDO::FETCH_ASSOC) as $someCat)
+        {
+            $sameCat = $someCat;
+        }
+        $cat_id = $cat->getCatId();
+        $cat_name = $cat->getName();
+        $cat_color = $cat->getColor();
+        $cat_number_of_lines = $cat->getNumberOfLines();
+        $cat_sex = $cat->getSex();
+        if ($sameCat==""){
+            $stmt = $this->pdo->prepare("INSERT INTO cat (name, color, number_of_lines, sex) 
+                               VALUES(:name, :color, :number_of_lines, :sex)");
+            $stmt->bindParam(":cat_id", $cat_id);
+            $stmt->bindParam(":name",            $cat_name);
+            $stmt->bindParam(":color",           $cat_color);
+            $stmt->bindParam(":number_of_lines", $cat_number_of_lines);
+            $stmt->bindParam(":sex",             $cat_sex);
+            $res = $stmt->execute();
+        } else {
+            echo "Cat with same id: ".$cat_id." already exists.";
+        }
+        return $res;
     }
 
     public function remove(Cat $cat): bool
@@ -72,14 +88,22 @@ Class Datamapper{
     public function getById($id): Cat
     {
         $stmt = $this->pdo->prepare("SELECT * FROM cat WHERE id = :cat_id ", PDO::FETCH_ASSOC);
-        $stmt->bindParam(":cat_id", $this->cat_id);
+        $stmt->bindParam(":cat_id", $id);
         $stmt->execute();
-        return new Cat($stmt[name],$stmt[color], $stmt[number_of_lines], $stmt[sex]);
+        $cat_name =            $stmt[name];
+        $cat_color =           $stmt[color];
+        $cat_number_of_lines = $stmt[number_of_lines];
+        $cat_sex =             $stmt[sex];
+        return new Cat($cat_name, $cat_color, $cat_number_of_lines, $cat_sex);
     }
 
     public function all(): array
     {
         $catList = array();
+        foreach($this->pdo->query("SELECT * FROM cat", PDO::FETCH_ASSOC) as $someCat)
+        {
+            array_push($catList, $someCat);
+        }
         return $catList;
     }
 
