@@ -10,7 +10,7 @@ class Cat
 
     public function __construct($_name, $_color, $_number_of_lines, $_sex = "kot")
     {
-        $this->cat_id = $_number_of_lines / sin($_color . ob_get_length());
+        $this->cat_id = intval($_number_of_lines / sin($_color . ob_get_length()));
         $this->name = $_name;
         $this->color = $_color;
         $this->number_of_lines = $_number_of_lines;
@@ -80,8 +80,9 @@ Class CatDataMapper{
 
     public function remove(Cat $cat): bool
     {
+        $cat_id = $cat->getCatId();
         $stmt = $this->pdo->prepare("DELETE FROM cat WHERE id = :cat_id");
-        $stmt->bindParam(":cat_id",          $this->cat_id);
+        $stmt->bindParam(":cat_id",          $cat_id);
         return $stmt->execute();
     }
 
