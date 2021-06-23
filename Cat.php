@@ -46,8 +46,8 @@ class Cat
 Class CatDataMapper{
     protected $pdo;
 
-    public function __construct(PDO $db) {
-        $this->pdo = $db;
+    public function __construct($dsn, $host, $pass) {
+        $this->pdo = connect($dsn, $host, $pass);
     }
 
     public function save(Cat $cat) : bool
